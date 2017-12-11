@@ -119,7 +119,6 @@ class MongoDb
         $reflectionClass = new \ReflectionClass($class);
         foreach ($reflectionClass->getProperties() as $property) {
             $annotation = $this->annotationReader->getPropertyAnnotation($property, 'PhpHolics\MongoDbBundle\Annotation\Property');
-            dump($annotation);
             if (!$annotation) {
                 $annotation = $this->annotationReader->getPropertyAnnotation($property, 'PhpHolics\MongoDbBundle\Annotation\Id');
             }
@@ -152,7 +151,6 @@ class MongoDb
                 $prop->setValue($object, $data[$annotation->getName()] ?? null);
             }
         }
-        dump($data);
         $collection = $reflectionObject->getProperty('_collection');
         $collection->setAccessible(true);
         $collection->setValue($object, $this->getCollection($class));
