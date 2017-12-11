@@ -1,0 +1,28 @@
+services:
+#    php_holics_mongodb.example:
+#        class: PhpHolics\MongoDbBundle\Example
+#        arguments: ["@service_id", "plain_value", "%parameter%"]
+
+
+    phpholics.mongodb:
+        class: PhpHolics\MongoDbBundle\Service\MongoDb
+        public: true
+        arguments:
+            - '%mongo_database_host%'
+            - '%mongo_database_port%'
+            - '%mongo_database_name%'
+            - '@annotation_reader'
+        calls:
+            - [setArrayType, ['%phpholics.array_class%']]
+
+
+    PhpHolics\MongoDbBundle\Debug\DataCollector:
+        tags:
+            -
+                name: data_collector
+                template: '@PhpHolicsMongoDb/data_collector/template.html.twig'
+                # must match the value returned by the getName() method
+                id:       'app.mongodbbundle_query_collector'
+        public: false
+        calls:
+            - [setMongoDb, ["@phpholics.mongodb"]]

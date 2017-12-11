@@ -1,0 +1,5 @@
+parameters:
+    phpholics.array_class: 'PhpHolics\MongoDbBundle\Document\DocumentArray'
+    mongo_database_host: 127.0.0.1
+    mongo_database_port: 27017
+    mongo_database_name: mongo_symfony

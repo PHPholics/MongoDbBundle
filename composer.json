@@ -1,0 +1,32 @@
+{
+    "name": "phpholics/mongodb-bundle",
+    "version": "dev-master",
+    "description": "PHP 7.1 compatible MongoDB simple ODM",
+    "keywords": ["odm","mongodb", "database", "document"],
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Karol Wojciechowski",
+            "email": "karol@symfony.ninja"
+        },
+        {
+            "name": "Jacek Lisoń",
+            "email": "-"
+        },
+        {
+            "name": "Paweł Kolanowski",
+            "email": "-"
+        }
+    ],
+    "require": {
+        "php": ">=7.1.0",
+        "mongodb/mongodb": "~1.2",
+        "doctrine/annotations": "~1.2",
+        "symfony/symfony": "~3.0|~4.0"
+    },
+    "autoload": {
+        "psr-4": { "PhpHolics\\MongoDbBundle\\": "" }
+    },
+    "minimum-stability": "dev"
+}
