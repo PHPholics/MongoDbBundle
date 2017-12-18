@@ -3,3 +3,4 @@ parameters:
     mongo_database_host: 127.0.0.1
     mongo_database_port: 27017
     mongo_database_name: mongo_symfony
+    mongo_database_credentials: {username: null, password: null}

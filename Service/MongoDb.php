@@ -13,17 +13,18 @@ use Doctrine\Common\Annotations\Reader;
 
 class MongoDb
 {
-    private $host, $port, $dbName, $client, $annotationReader, $arrayType = null;
+    private $host, $port, $dbName, $client, $annotationReader, $credentials = [], $arrayType = null;
     private $microcacheCollections = [];
     private $microcachePropertiesAnnotations = [];
 
     private $profiling = [];
 
-    public function __construct(string $host, string $port, string $dbName, Reader $annotationReader)
+    public function __construct(string $host, string $port, string $dbName, array $credentials, Reader $annotationReader)
     {
         $this->host = $host;
         $this->port = $port;
         $this->dbName = $dbName;
+        $this->credentials = $credentials;
         $this->annotationReader = $annotationReader;
     }
 
@@ -65,7 +66,11 @@ class MongoDb
     protected function getDatabase(): Database
     {
         if ($this->client === null) {
-            $this->client = new Client('mongodb://' . $this->host . ':' . $this->port . '/');
+            $uriOptions = [];
+            if (isset($this->credentials['username']) && isset($this->credentials['password'])) {
+                $uriOptions = $this->credentials;
+            }
+            $this->client = new Client('mongodb://' . $this->host . ':' . $this->port . '/', $uriOptions);
         }
         return $this->client->{$this->dbName};
     }

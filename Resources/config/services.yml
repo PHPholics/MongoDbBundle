@@ -11,6 +11,7 @@ services:
             - '%mongo_database_host%'
             - '%mongo_database_port%'
             - '%mongo_database_name%'
+            - '%mongo_database_credentials%'
             - '@annotation_reader'
         calls:
             - [setArrayType, ['%phpholics.array_class%']]
