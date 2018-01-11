@@ -6,6 +6,7 @@ use MongoDB\Client;
 use MongoDB\Database;
 use MongoDB\Model\BSONArray;
 use PhpHolics\MongoDbBundle\Annotation\Document;
+use PhpHolics\MongoDbBundle\Annotation\EmbeddedDocument;
 use PhpHolics\MongoDbBundle\Annotation\Id;
 use PhpHolics\MongoDbBundle\Document\DocumentCollection;
 
@@ -66,11 +67,12 @@ class MongoDb
     protected function getDatabase(): Database
     {
         if ($this->client === null) {
-            $uriOptions = [];
+            $login = '';
             if (isset($this->credentials['username']) && isset($this->credentials['password'])) {
-                $uriOptions = $this->credentials;
+                $login = $this->credentials['username'] . ':' . $this->credentials['password'] . '@';
             }
-            $this->client = new Client('mongodb://' . $this->host . ':' . $this->port . '/', $uriOptions);
+
+            $this->client = new Client('mongodb://' . $login . $this->host . ':' . $this->port . '/');
         }
         return $this->client->{$this->dbName};
     }
@@ -124,6 +126,12 @@ class MongoDb
         $reflectionClass = new \ReflectionClass($class);
         foreach ($reflectionClass->getProperties() as $property) {
             $annotation = $this->annotationReader->getPropertyAnnotation($property, 'PhpHolics\MongoDbBundle\Annotation\Property');
+
+
+            if (!$annotation) {
+                $annotation = $this->annotationReader->getPropertyAnnotation($property, 'PhpHolics\MongoDbBundle\Annotation\EmbeddedDocument');
+            }
+
             if (!$annotation) {
                 $annotation = $this->annotationReader->getPropertyAnnotation($property, 'PhpHolics\MongoDbBundle\Annotation\Id');
             }
@@ -148,35 +156,51 @@ class MongoDb
 
         foreach ($propertiesAnnotation as $property => $annotation) {
             $prop = $reflectionObject->getProperty($property);
-            if ($annotation instanceof Id) {
-                $prop->setAccessible(true);
-                $prop->setValue($object, $data['_id']);
-            } else {
-                $prop->setAccessible(true);
-                $prop->setValue($object, $data[$annotation->getName()] ?? null);
+            switch (true) {
+                case $annotation instanceof Id:
+                    $prop->setAccessible(true);
+                    $prop->setValue($object, $data['_id']);
+                    break;
+
+                case $annotation instanceof EmbeddedDocument:
+                    $prop->setAccessible(true);
+                    if (isset($data[$annotation->getName()]) && !empty($data[$annotation->getName()])) {
+                        $className = $annotation->getClass();
+                        $value = new $className();
+                        $objectData = is_array($data[$annotation->getName()]) ? $data[$annotation->getName()] : $data[$annotation->getName()]->getBsonStateData();
+                        $value->bsonUnserialize($objectData);
+                        $this->loadObject($value, $objectData);
+                        $prop->setValue($object, $value);
+                    }
+                    break;
+
+                default:
+                    $prop->setAccessible(true);
+                    $prop->setValue($object, $data[$annotation->getName()] ?? null);
+                    break;
             }
         }
-        $collection = $reflectionObject->getProperty('_collection');
-        $collection->setAccessible(true);
-        $collection->setValue($object, $this->getCollection($class));
     }
 
     public function unloadObject($object): array
     {
         $data = [];
-
         $class = get_class($object);
         $propertiesAnnotation = $this->getPropertiesAnnotations($class);
         $reflectionObject = new \ReflectionObject($object);
 
         foreach ($propertiesAnnotation as $property => $annotation) {
             $prop = $reflectionObject->getProperty($property);
-
             $prop->setAccessible(true);
-            $data[$annotation->getName()] = $prop->getValue($object);
-
+            $value = $prop->getValue($object);
+            if ($value instanceof \PhpHolics\MongoDbBundle\Document\EmbeddedDocument) {
+                $value = $this->unloadObject($value);
+            }
+            $data[$annotation->getName()] = $value;
         }
-        if (!$data['_id']) {
+
+
+        if (!($data['_id'] ?? false)) {
             unset($data['_id']);
         }
         return $data;

@@ -8,33 +8,34 @@ use Doctrine\Common\Annotations\Annotation;
  * Class Document
  * @package PhpHolics\MongoDbBundle\Annotation
  * @Annotation
+ * @Annotation\Target("PROPERTY")
  */
-class Property extends BaseProperty
+abstract class BaseProperty
 {
+
 
     /**
      * @Annotation\Required()
      * @var string
      */
-    public $type;
+    public $name;
 
 
     /**
      * @return string
      */
-    public function getType(): string
+    public function getName(): string
     {
-        return $this->type;
+        return $this->name;
     }
 
     /**
-     * @param string $type
-     * @return Property
+     * @param string $name
+     * @return $this
      */
-    public function setType(string $type): Property
+    public function setName(string $name): Property
     {
-        $this->type = $type;
+        $this->name = $name;
         return $this;
     }
-
 }

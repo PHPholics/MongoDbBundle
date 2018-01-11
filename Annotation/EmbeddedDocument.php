@@ -3,38 +3,35 @@
 namespace PhpHolics\MongoDbBundle\Annotation;
 
 use Doctrine\Common\Annotations\Annotation;
+use PhpHolics\MongoDbBundle\Document\DocumentCollection;
 
 /**
  * Class Document
  * @package PhpHolics\MongoDbBundle\Annotation
  * @Annotation
  */
-class Property extends BaseProperty
+class EmbeddedDocument extends BaseProperty
 {
 
     /**
      * @Annotation\Required()
      * @var string
      */
-    public $type;
-
+    public $class;
 
     /**
      * @return string
      */
-    public function getType(): string
+    public function getClass(): string
     {
-        return $this->type;
+        return $this->class;
     }
 
     /**
-     * @param string $type
-     * @return Property
+     * @param string $class
      */
-    public function setType(string $type): Property
+    public function setClass(string $class)
     {
-        $this->type = $type;
-        return $this;
+        $this->class = $class;
     }
-
 }
