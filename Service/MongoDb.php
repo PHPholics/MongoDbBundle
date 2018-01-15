@@ -178,7 +178,7 @@ class MongoDb
                     $prop->setAccessible(true);
                     $value = $data[$annotation->getName()] ?? null;
                     if($annotation->getType() == 'geo_json' && is_object($value)){
-                        $value = $value->jsonSerialize();
+                        $value = $value->getBsonStateData();
                     }
                     $prop->setValue($object, $value);
                     break;
