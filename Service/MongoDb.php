@@ -176,7 +176,11 @@ class MongoDb
 
                 default:
                     $prop->setAccessible(true);
-                    $prop->setValue($object, $data[$annotation->getName()] ?? null);
+                    $value = $data[$annotation->getName()] ?? null;
+                    if($annotation->getType() == 'geo_json' && is_object($value)){
+                        $value = $value->jsonSerialize();
+                    }
+                    $prop->setValue($object, $value);
                     break;
             }
         }
