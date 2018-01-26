@@ -145,6 +145,53 @@ class MongoDb
     }
 
     /**
+     * Map documents fields to names stored in db
+     * Handles operators like '$or' and subdocuments :confetti_ball:
+     *
+     * @param $filters
+     * @param $class
+     * @return array
+     */
+    public function mappingToFields($filters, $class): array
+    {
+        $propertiesAnnotations = $this->getPropertiesAnnotations($class);
+
+        $readyFilters = [];
+        foreach ($filters as $field => $filter) {
+            if (false === strpos($field, '.')) {
+                if (true === is_array($filter)) {
+                    $filter = $this->mappingToFields($filter, $class);
+                }
+
+                if (true === array_key_exists($field, $propertiesAnnotations)) {
+                    $field = $propertiesAnnotations[$field]->getName();
+                }
+
+                $readyFilters[$field] = $filter;
+            } else {
+                if (true === is_array($filter)) {
+                    $filter = $this->mappingToFields($filter, $class);
+                }
+
+                $subPropertyAnotations = $propertiesAnnotations;
+                $parts = explode('.', $field);
+                foreach ($parts as $k => $v) {
+                    if (true === array_key_exists($v, $subPropertyAnotations)) {
+                        $parts[$k] = $subPropertyAnotations[$v]->getName();
+                        if ($subPropertyAnotations[$v] instanceof EmbeddedDocument) {
+                            $subPropertyAnotations = $this->getPropertiesAnnotations($subPropertyAnotations[$v]->getClass());
+                        }
+                    }
+                }
+
+                $parts = implode('.', $parts);
+                $readyFilters[$parts] = $filter;
+            }
+        }
+        return $readyFilters;
+    }
+
+    /**
      * @param $object
      * @param $data
      */
@@ -177,7 +224,7 @@ class MongoDb
                 default:
                     $prop->setAccessible(true);
                     $value = $data[$annotation->getName()] ?? null;
-                    if($annotation->getType() == 'geo_json' && is_object($value)){
+                    if ($annotation->getType() == 'geo_json' && is_object($value)) {
                         $value = $value->getBsonStateData();
                     }
                     $prop->setValue($object, $value);
