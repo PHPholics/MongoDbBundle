@@ -108,8 +108,10 @@ class DocumentCollection extends Collection
         $filter = $this->getMongoDb()->mappingToFields($filter, $this->getTypeMap()['document']);
         $found = parent::find($filter, $options);
         $objects = [];
-        foreach ($found as $object) {
-            $this->getMongoDb()->loadObject($object, $object->getBsonStateData());
+        foreach ($found as $objectArray) {
+            $className = $this->getTypeMap()['document'];
+            $object = new $className();
+            $this->getMongoDb()->loadObject($object, $objectArray);
             $objects[] = $object;
         }
 

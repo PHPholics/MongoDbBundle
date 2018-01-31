@@ -88,7 +88,7 @@ class MongoDb
         $collection = $this->getDatabase()->{$classAnnotations->getCollectionName()}->withOptions(
             [
                 'typeMap' => [
-                    'root' => $class,
+                    'root' => 'array',
                     'document' => $class,
                     'array' => $this->arrayType ? $this->arrayType : BSONArray::class
                 ]
@@ -198,6 +198,7 @@ class MongoDb
     public function loadObject($object, $data): void
     {
         $class = get_class($object);
+        $object->bsonUnserialize($data);
         $propertiesAnnotation = $this->getPropertiesAnnotations($class);
         $reflectionObject = new \ReflectionObject($object);
 
